@@ -1,5 +1,42 @@
 const WORDS = ['CAT', 'DOG', 'BOX', 'SUN', 'CUP', 'HAT', 'PIG', 'BED'];
 let mode = 'HOME';
+
+// --- Audio ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playTone(freq, startTime, duration, type = 'square', gain = 0.15) {
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, startTime);
+    gainNode.gain.setValueAtTime(gain, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    osc.start(startTime);
+    osc.stop(startTime + duration);
+}
+
+function playCorrect() {
+    const t = audioCtx.currentTime;
+    playTone(440, t, 0.1);
+    playTone(660, t + 0.08, 0.12);
+}
+
+function playWrong() {
+    const t = audioCtx.currentTime;
+    playTone(220, t, 0.15, 'sawtooth', 0.1);
+    playTone(180, t + 0.1, 0.15, 'sawtooth', 0.1);
+}
+
+function playSuccess() {
+    const t = audioCtx.currentTime;
+    [523, 659, 784, 1047].forEach((freq, i) => {
+        playTone(freq, t + i * 0.1, 0.15);
+    });
+}
+// --- End Audio ---
+
 let currentWord = '';
 let spellingIndex = 0;
 let countItems = 0;
@@ -165,6 +202,7 @@ function render() {
 }
 
 function triggerSuccess(nextFn) {
+    playSuccess();
     successOverlay.classList.remove('hidden');
     setTimeout(() => {
         successOverlay.classList.add('hidden');
@@ -194,10 +232,13 @@ function handleLetterClick(letter) {
                 startSpelling();
             });
         } else {
+            playCorrect();
             spellingIndex++;
             generateSpellingOptions(currentWord[spellingIndex]);
             render();
         }
+    } else {
+        playWrong();
     }
 }
 
@@ -218,6 +259,8 @@ function handleCountClick(num) {
         triggerSuccess(() => {
             startCounting();
         });
+    } else {
+        playWrong();
     }
 }
 
@@ -242,6 +285,8 @@ function handleAdditionClick(num) {
         triggerSuccess(() => {
             startAddition();
         });
+    } else {
+        playWrong();
     }
 }
 

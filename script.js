@@ -1,5 +1,46 @@
 const WORDS = ['CAT', 'DOG', 'BOX', 'SUN', 'CUP', 'HAT', 'PIG', 'BED'];
+const WORD_EMOJI = {
+    CAT: '🐱', DOG: '🐶', BOX: '📦', SUN: '☀️',
+    CUP: '☕', HAT: '🎩', PIG: '🐷', BED: '🛏️'
+};
 let mode = 'HOME';
+
+// --- Audio ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playTone(freq, startTime, duration, type = 'square', gain = 0.15) {
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, startTime);
+    gainNode.gain.setValueAtTime(gain, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    osc.start(startTime);
+    osc.stop(startTime + duration);
+}
+
+function playCorrect() {
+    const t = audioCtx.currentTime;
+    playTone(440, t, 0.1);
+    playTone(660, t + 0.08, 0.12);
+}
+
+function playWrong() {
+    const t = audioCtx.currentTime;
+    playTone(220, t, 0.15, 'sawtooth', 0.1);
+    playTone(180, t + 0.1, 0.15, 'sawtooth', 0.1);
+}
+
+function playSuccess() {
+    const t = audioCtx.currentTime;
+    [523, 659, 784, 1047].forEach((freq, i) => {
+        playTone(freq, t + i * 0.1, 0.15);
+    });
+}
+// --- End Audio ---
+
 let currentWord = '';
 let spellingIndex = 0;
 let countItems = 0;
@@ -51,7 +92,12 @@ function render() {
         const h2 = document.createElement('h2');
         h2.innerText = 'SPELL THE WORD';
         box.appendChild(h2);
-        
+
+        const emoji = document.createElement('div');
+        emoji.className = 'word-emoji';
+        emoji.innerText = WORD_EMOJI[currentWord];
+        box.appendChild(emoji);
+
         const h1 = document.createElement('h1');
         h1.className = 'display-text';
         currentWord.split('').forEach((char, i) => {
@@ -165,6 +211,7 @@ function render() {
 }
 
 function triggerSuccess(nextFn) {
+    playSuccess();
     successOverlay.classList.remove('hidden');
     setTimeout(() => {
         successOverlay.classList.add('hidden');
@@ -172,17 +219,19 @@ function triggerSuccess(nextFn) {
     }, 1000);
 }
 
-function generateSpellingOptions(correctLetter) {
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".replace(correctLetter, "");
-    let shuffled = alphabet.split('').sort(() => 0.5 - Math.random());
-    const distractors = shuffled.slice(0, 3);
-    spellingOptions = [correctLetter, ...distractors].sort(() => 0.5 - Math.random());
+function generateSpellingOptions(word) {
+    const letters = [...new Set(word.split(''))];
+    const distractors = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        .split('').filter(c => !letters.includes(c))
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 4 - letters.length);
+    spellingOptions = [...letters, ...distractors].sort(() => 0.5 - Math.random());
 }
 
 function startSpelling() {
     currentWord = WORDS[Math.floor(Math.random() * WORDS.length)];
     spellingIndex = 0;
-    generateSpellingOptions(currentWord[0]);
+    generateSpellingOptions(currentWord);
     mode = 'SPELLING';
     render();
 }
@@ -194,10 +243,12 @@ function handleLetterClick(letter) {
                 startSpelling();
             });
         } else {
+            playCorrect();
             spellingIndex++;
-            generateSpellingOptions(currentWord[spellingIndex]);
             render();
         }
+    } else {
+        playWrong();
     }
 }
 
@@ -218,6 +269,8 @@ function handleCountClick(num) {
         triggerSuccess(() => {
             startCounting();
         });
+    } else {
+        playWrong();
     }
 }
 
@@ -242,6 +295,8 @@ function handleAdditionClick(num) {
         triggerSuccess(() => {
             startAddition();
         });
+    } else {
+        playWrong();
     }
 }
 

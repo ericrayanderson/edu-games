@@ -230,10 +230,43 @@ function render() {
         h2.innerText = 'SOLVE THE PROBLEM';
         box.appendChild(h2);
 
-        const h1 = document.createElement('h1');
-        h1.className = 'display-text';
-        h1.innerText = `${mathProblem.a} + ${mathProblem.b} = ?`;
-        box.appendChild(h1);
+        const mathVisual = document.createElement('div');
+        mathVisual.className = 'math-visual';
+
+        [mathProblem.a, mathProblem.b].forEach((num, idx) => {
+            const group = document.createElement('div');
+            group.className = 'addend-group';
+
+            const numEl = document.createElement('div');
+            numEl.className = 'addend-number';
+            numEl.innerText = num;
+            group.appendChild(numEl);
+
+            const circles = document.createElement('div');
+            circles.className = 'addend-circles';
+            for (let i = 0; i < num; i++) {
+                const span = document.createElement('span');
+                span.className = 'item-icon';
+                span.innerText = '●';
+                circles.appendChild(span);
+            }
+            group.appendChild(circles);
+            mathVisual.appendChild(group);
+
+            if (idx === 0) {
+                const plus = document.createElement('div');
+                plus.className = 'math-operator';
+                plus.innerText = '+';
+                mathVisual.appendChild(plus);
+            }
+        });
+
+        const eq = document.createElement('div');
+        eq.className = 'math-operator';
+        eq.innerText = '= ?';
+        mathVisual.appendChild(eq);
+
+        box.appendChild(mathVisual);
         screen.appendChild(box);
 
         const controls = document.createElement('div');

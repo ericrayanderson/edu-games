@@ -86,6 +86,8 @@ let coolingDown = false;
 
 const appContainer = document.getElementById('app-container');
 const successOverlay = document.getElementById('success-overlay');
+const wrongOverlay = document.getElementById('wrong-overlay');
+const wrongProgressBar = document.getElementById('wrong-progress-bar');
 
 function render() {
     appContainer.innerHTML = '';
@@ -313,9 +315,21 @@ function handleWrong() {
         btn.disabled = true;
         btn.classList.add('cooldown');
     });
+
+    wrongOverlay.classList.remove('hidden');
+    wrongProgressBar.style.transition = 'none';
+    wrongProgressBar.style.width = '0%';
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            wrongProgressBar.style.transition = 'width 5s linear';
+            wrongProgressBar.style.width = '100%';
+        });
+    });
+
     setTimeout(() => {
         coolingDown = false;
         root.classList.remove('wrong-screen');
+        wrongOverlay.classList.add('hidden');
         const btns = appContainer.querySelectorAll('.controls button');
         btns.forEach(btn => {
             btn.disabled = false;

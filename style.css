@@ -270,6 +270,48 @@ button.cooldown {
   transition: width 5s linear;
 }
 
+.menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.difficulty-badge {
+  font-size: 14px;
+  opacity: 0.6;
+  text-shadow: none;
+}
+
+.shape-display {
+  font-size: 150px;
+  margin: 20px 0;
+  line-height: 1.1;
+}
+
+.comparison-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.compare-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  font-size: 50px;
+  max-width: 200px;
+  min-width: 100px;
+}
+
+.compare-vs {
+  font-size: 80px;
+  opacity: 0.4;
+}
+
 .hidden {
   display: none !important;
 }

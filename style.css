@@ -57,6 +57,9 @@ button {
   transition: all 0.1s;
   box-shadow: var(--green-glow);
   white-space: nowrap;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button:active {
@@ -131,7 +134,7 @@ button:active {
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  margin-top: 30px;
+  margin-top: 15px;
 }
 
 .big-letter-btn {
@@ -202,7 +205,7 @@ button:active {
 }
 
 .back-btn {
-  margin-top: 50px;
+  margin-top: 30px;
   font-size: 18px;
   border-width: 2px;
 }
@@ -303,8 +306,8 @@ button.cooldown {
 }
 
 .shape-display {
-  font-size: 150px;
-  margin: 20px 0;
+  font-size: 100px;
+  margin: 10px 0;
   line-height: 1.1;
 }
 

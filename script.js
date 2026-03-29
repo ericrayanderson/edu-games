@@ -153,9 +153,6 @@ function render() {
 
         const box = document.createElement('div');
         box.className = 'box-border';
-        const h2 = document.createElement('h2');
-        h2.innerText = 'SPELL THE WORD';
-        box.appendChild(h2);
 
         const emoji = document.createElement('div');
         emoji.className = 'word-emoji';
@@ -207,9 +204,6 @@ function render() {
 
         const box = document.createElement('div');
         box.className = 'box-border';
-        const h2 = document.createElement('h2');
-        h2.innerText = 'HOW MANY?';
-        box.appendChild(h2);
 
         const items = document.createElement('div');
         items.className = 'items-display';
@@ -246,9 +240,6 @@ function render() {
 
         const box = document.createElement('div');
         box.className = 'box-border';
-        const h2 = document.createElement('h2');
-        h2.innerText = 'SOLVE THE PROBLEM';
-        box.appendChild(h2);
 
         const mathVisual = document.createElement('div');
         mathVisual.className = 'math-visual';
@@ -344,9 +335,6 @@ function render() {
 
         const box = document.createElement('div');
         box.className = 'box-border';
-        const h2 = document.createElement('h2');
-        h2.innerText = 'WHICH SIDE HAS MORE?';
-        box.appendChild(h2);
 
         const comparison = document.createElement('div');
         comparison.className = 'comparison-display';

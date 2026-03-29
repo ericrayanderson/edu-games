@@ -3,6 +3,23 @@ const WORD_EMOJI = {
     CAT: '🐱', DOG: '🐶', BOX: '📦', SUN: '☀️',
     CUP: '☕', HAT: '🎩', PIG: '🐷', BED: '🛏️'
 };
+
+const SHAPES = [
+    { name: 'CIRCLE', draw: '○' },
+    { name: 'SQUARE', draw: '□' },
+    { name: 'TRIANGLE', draw: '△' },
+    { name: 'DIAMOND', draw: '◇' },
+    { name: 'STAR', draw: '☆' },
+    { name: 'HEART', draw: '♡' }
+];
+
+const GAME_DIFFICULTY = {
+    COUNTING: 2,
+    BIGGER_SMALLER: 3,
+    SHAPES: 3,
+    ADDITION: 5,
+    SPELLING: 7
+};
 let mode = 'HOME';
 let pendingGame = '';
 let turnsLeft = 0;
@@ -80,6 +97,8 @@ let currentWord = '';
 let spellingIndex = 0;
 let countItems = 0;
 let mathProblem = { a: 0, b: 0, result: 0 };
+let currentShape = null;
+let biggerSmallerProblem = { left: 0, right: 0, answer: '' };
 let currentOptions = [];
 let spellingOptions = [];
 let coolingDown = false;
@@ -105,20 +124,26 @@ function render() {
         line.innerText = '══════════════════════════════';
         menu.appendChild(line);
 
-        const btnSpelling = document.createElement('button');
-        btnSpelling.innerText = '[ SPELLING ]';
-        btnSpelling.onclick = () => selectGame('SPELLING');
-        menu.appendChild(btnSpelling);
-
-        const btnCounting = document.createElement('button');
-        btnCounting.innerText = '[ COUNTING ]';
-        btnCounting.onclick = () => selectGame('COUNTING');
-        menu.appendChild(btnCounting);
-
-        const btnAddition = document.createElement('button');
-        btnAddition.innerText = '[ ADDITION ]';
-        btnAddition.onclick = () => selectGame('ADDITION');
-        menu.appendChild(btnAddition);
+        const games = [
+            { name: 'COUNTING', key: 'COUNTING' },
+            { name: 'BIGGER/SMALLER', key: 'BIGGER_SMALLER' },
+            { name: 'SHAPES', key: 'SHAPES' },
+            { name: 'ADDITION', key: 'ADDITION' },
+            { name: 'SPELLING', key: 'SPELLING' }
+        ];
+        games.forEach(game => {
+            const btn = document.createElement('button');
+            btn.className = 'menu-btn';
+            const label = document.createElement('span');
+            label.innerText = '[ ' + game.name + ' ]';
+            btn.appendChild(label);
+            const diff = document.createElement('span');
+            diff.className = 'difficulty-badge';
+            diff.innerText = GAME_DIFFICULTY[game.key] + '/10';
+            btn.appendChild(diff);
+            btn.onclick = () => selectGame(game.key);
+            menu.appendChild(btn);
+        });
 
         appContainer.appendChild(menu);
 
@@ -282,6 +307,100 @@ function render() {
 
         appContainer.appendChild(screen);
 
+    } else if (mode === 'SHAPES') {
+        const screen = document.createElement('div');
+        screen.className = 'game-screen';
+
+        const box = document.createElement('div');
+        box.className = 'box-border';
+        const h2 = document.createElement('h2');
+        h2.innerText = 'WHAT SHAPE IS THIS?';
+        box.appendChild(h2);
+
+        const shapeDisplay = document.createElement('div');
+        shapeDisplay.className = 'shape-display';
+        shapeDisplay.innerText = currentShape.draw;
+        box.appendChild(shapeDisplay);
+        screen.appendChild(box);
+
+        const controls = document.createElement('div');
+        controls.className = 'controls';
+        currentOptions.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.innerText = opt;
+            btn.onclick = () => handleShapeClick(opt);
+            controls.appendChild(btn);
+        });
+        screen.appendChild(controls);
+
+        const backBtn = document.createElement('button');
+        backBtn.className = 'back-btn';
+        backBtn.innerText = 'RETURN TO MENU';
+        backBtn.onclick = () => { mode = 'HOME'; render(); };
+        screen.appendChild(backBtn);
+
+        appContainer.appendChild(screen);
+
+    } else if (mode === 'BIGGER_SMALLER') {
+        const screen = document.createElement('div');
+        screen.className = 'game-screen';
+
+        const box = document.createElement('div');
+        box.className = 'box-border';
+        const h2 = document.createElement('h2');
+        h2.innerText = 'WHICH SIDE HAS MORE?';
+        box.appendChild(h2);
+
+        const comparison = document.createElement('div');
+        comparison.className = 'comparison-display';
+
+        const leftGroup = document.createElement('div');
+        leftGroup.className = 'compare-group';
+        for (let i = 0; i < biggerSmallerProblem.left; i++) {
+            const span = document.createElement('span');
+            span.className = 'item-icon';
+            span.innerText = '●';
+            leftGroup.appendChild(span);
+        }
+        comparison.appendChild(leftGroup);
+
+        const vs = document.createElement('div');
+        vs.className = 'compare-vs';
+        vs.innerText = '|';
+        comparison.appendChild(vs);
+
+        const rightGroup = document.createElement('div');
+        rightGroup.className = 'compare-group';
+        for (let i = 0; i < biggerSmallerProblem.right; i++) {
+            const span = document.createElement('span');
+            span.className = 'item-icon';
+            span.innerText = '●';
+            rightGroup.appendChild(span);
+        }
+        comparison.appendChild(rightGroup);
+
+        box.appendChild(comparison);
+        screen.appendChild(box);
+
+        const controls = document.createElement('div');
+        controls.className = 'controls';
+        ['LEFT', 'RIGHT'].forEach(side => {
+            const btn = document.createElement('button');
+            btn.innerText = '◄ LEFT';
+            if (side === 'RIGHT') btn.innerText = 'RIGHT ►';
+            btn.onclick = () => handleBiggerSmallerClick(side);
+            controls.appendChild(btn);
+        });
+        screen.appendChild(controls);
+
+        const backBtn = document.createElement('button');
+        backBtn.className = 'back-btn';
+        backBtn.innerText = 'RETURN TO MENU';
+        backBtn.onclick = () => { mode = 'HOME'; render(); };
+        screen.appendChild(backBtn);
+
+        appContainer.appendChild(screen);
+
     } else if (mode === 'THE_END') {
         const screen = document.createElement('div');
         screen.className = 'game-screen';
@@ -354,9 +473,15 @@ function selectGame(game) {
 
 function startGameWithTurns(turns) {
     turnsLeft = turns;
+    startCurrentGame();
+}
+
+function startCurrentGame() {
     if (pendingGame === 'SPELLING') startSpelling();
     else if (pendingGame === 'COUNTING') startCounting();
     else if (pendingGame === 'ADDITION') startAddition();
+    else if (pendingGame === 'SHAPES') startShapes();
+    else if (pendingGame === 'BIGGER_SMALLER') startBiggerSmaller();
 }
 
 function nextRound() {
@@ -367,9 +492,7 @@ function nextRound() {
         playTheEnd();
         return;
     }
-    if (pendingGame === 'SPELLING') startSpelling();
-    else if (pendingGame === 'COUNTING') startCounting();
-    else if (pendingGame === 'ADDITION') startAddition();
+    startCurrentGame();
 }
 
 function generateSpellingOptions(word) {
@@ -445,6 +568,53 @@ function startAddition() {
 function handleAdditionClick(num) {
     if (coolingDown) return;
     if (num === mathProblem.result) {
+        playCorrect();
+        triggerSuccess(() => nextRound());
+    } else {
+        handleWrong();
+    }
+}
+
+function startShapes() {
+    currentShape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+    let opts = [currentShape.name];
+    while (opts.length < 3) {
+        let r = SHAPES[Math.floor(Math.random() * SHAPES.length)].name;
+        if (!opts.includes(r)) opts.push(r);
+    }
+    currentOptions = opts.sort(() => 0.5 - Math.random());
+    mode = 'SHAPES';
+    render();
+}
+
+function handleShapeClick(name) {
+    if (coolingDown) return;
+    if (name === currentShape.name) {
+        playCorrect();
+        triggerSuccess(() => nextRound());
+    } else {
+        handleWrong();
+    }
+}
+
+function startBiggerSmaller() {
+    let left, right;
+    do {
+        left = Math.floor(Math.random() * 9) + 1;
+        right = Math.floor(Math.random() * 9) + 1;
+    } while (left === right);
+    biggerSmallerProblem = {
+        left,
+        right,
+        answer: left > right ? 'LEFT' : 'RIGHT'
+    };
+    mode = 'BIGGER_SMALLER';
+    render();
+}
+
+function handleBiggerSmallerClick(side) {
+    if (coolingDown) return;
+    if (side === biggerSmallerProblem.answer) {
         playCorrect();
         triggerSuccess(() => nextRound());
     } else {
